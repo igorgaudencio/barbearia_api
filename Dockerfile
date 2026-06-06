@@ -7,11 +7,14 @@ FROM registry.docker.com/library/ruby:$RUBY_VERSION-slim as base
 # Rails app lives here
 WORKDIR /rails
 
-# Set production environment
-ENV RAILS_ENV="production" \
+ARG RAILS_ENV=production
+ARG BUNDLE_WITHOUT=development
+
+# Set application environment
+ENV RAILS_ENV="${RAILS_ENV}" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
-    BUNDLE_WITHOUT="development"
+    BUNDLE_WITHOUT="${BUNDLE_WITHOUT}"
 
 
 # Throw-away build stage to reduce size of final image
@@ -29,6 +32,7 @@ RUN bundle install && \
 
 # Copy application code
 COPY . .
+RUN chmod +x bin/*
 
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
@@ -56,4 +60,4 @@ ENTRYPOINT ["/rails/bin/docker-entrypoint"]
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-CMD ["./bin/rails", "server"]
+CMD ["./bin/rails", "server", "-b", "0.0.0.0"]
