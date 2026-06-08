@@ -5,6 +5,7 @@ Rails.application.routes.draw do
       post 'auth/cadastro', to: 'auth#cadastro'
       resources :agendamentos, only: [:index, :create, :destroy]
       resources :horarios,     only: [:index, :create, :destroy]
+      resources :servicos,     only: [:index, :create, :update, :destroy]
     end
   end
 end
