@@ -6,7 +6,7 @@ class Agendamento
   field :email,      type: String
   field :data,       type: Date
   field :horario,    type: String
-  field :status,     type: String, default: "confirmado"
+  field :status,     type: String, default: "CONFIRMADO"
   field :servico_id, type: String
   field :servico_nome,  type: String
   field :servico_preco, type: Float
