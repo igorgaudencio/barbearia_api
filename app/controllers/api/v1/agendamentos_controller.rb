@@ -23,6 +23,18 @@ module Api
         render json: { errors: ["Serviço não encontrado"] }, status: :unprocessable_entity
       end
 
+      def update
+        agendamento = Agendamento.find(params[:id])
+
+        if agendamento.update(status_params)
+          render json: agendamento
+        else
+          render json: { errors: agendamento.errors.full_messages }, status: :unprocessable_entity
+        end
+      rescue Mongoid::Errors::DocumentNotFound
+        render json: { errors: ["Agendamento não encontrado"] }, status: :not_found
+      end
+
       def destroy
         agendamento = Agendamento.find(params[:id])
         agendamento.destroy
@@ -33,6 +45,10 @@ module Api
 
       def agendamento_params
         params.require(:agendamento).permit(:nome, :email, :data, :horario, :servico_id)
+      end
+
+      def status_params
+        params.require(:agendamento).permit(:status)
       end
     end
   end

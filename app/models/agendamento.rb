@@ -2,6 +2,8 @@ class Agendamento
   include Mongoid::Document
   include Mongoid::Timestamps
 
+  STATUS_VALIDOS = %w[CONFIRMADO ATENDIDO AUSENTE].freeze
+
   field :nome,       type: String
   field :email,      type: String
   field :data,       type: Date
@@ -16,5 +18,5 @@ class Agendamento
   validates :data,       presence: true
   validates :horario,    presence: true
   validates :servico_id, presence: true
+  validates :status,     inclusion: { in: STATUS_VALIDOS }
 end
-
