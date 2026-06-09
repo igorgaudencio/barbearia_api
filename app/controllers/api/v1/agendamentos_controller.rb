@@ -3,8 +3,17 @@ module Api
     class AgendamentosController < ApplicationController
 
       def index
-        agendamentos = Agendamento.all.order_by(data: :asc)
+        agendamentos = agendamentos_por_status
         render json: agendamentos
+      rescue ArgumentError => e
+        render json: { errors: [e.message] }, status: :unprocessable_entity
+      end
+
+      def by_status
+        agendamentos = Agendamento.filtrar_por_status(params[:status])
+        render json: agendamentos
+      rescue ArgumentError => e
+        render json: { errors: [e.message] }, status: :unprocessable_entity
       end
 
       def create
@@ -49,6 +58,12 @@ module Api
 
       def status_params
         params.require(:agendamento).permit(:status)
+      end
+
+      def agendamentos_por_status
+        return Agendamento.ordenados if params[:status].blank?
+
+        Agendamento.filtrar_por_status(params[:status])
       end
     end
   end

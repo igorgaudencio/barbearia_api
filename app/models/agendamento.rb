@@ -3,6 +3,12 @@ class Agendamento
   include Mongoid::Timestamps
 
   STATUS_VALIDOS = %w[CONFIRMADO ATENDIDO AUSENTE].freeze
+  FILTROS_STATUS = {
+    "PENDENTES" => "CONFIRMADO",
+    "TODOS" => nil,
+    "ATENDIDOS" => "ATENDIDO",
+    "AUSENTES" => "AUSENTE"
+  }.freeze
 
   field :nome,       type: String
   field :email,      type: String
@@ -19,4 +25,19 @@ class Agendamento
   validates :horario,    presence: true
   validates :servico_id, presence: true
   validates :status,     inclusion: { in: STATUS_VALIDOS }
+
+  scope :ordenados, -> { order_by(data: :asc, horario: :asc) }
+
+  def self.filtrar_por_status(filtro)
+    filtro_normalizado = filtro.to_s.upcase
+
+    unless FILTROS_STATUS.key?(filtro_normalizado)
+      raise ArgumentError, "Filtro de status inválido. Use: #{FILTROS_STATUS.keys.join(', ')}"
+    end
+
+    status_banco = FILTROS_STATUS[filtro_normalizado]
+    return ordenados if status_banco.nil?
+
+    where(status: status_banco).ordenados
+  end
 end
