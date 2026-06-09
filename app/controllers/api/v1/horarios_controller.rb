@@ -19,12 +19,17 @@ module Api
             ocupados.include?(h) ||
             (data == hoje && h <= agora)
           end
+          desconto = PromocaoService.desconto_para(data)
 
           render json: {
             dia_semana:  dia_semana,
             horarios:    config.horarios,
             ocupados:    ocupados,
-            disponiveis: disponiveis
+            disponiveis: disponiveis,
+            promocao: {
+              ativo: desconto > 0,
+              desconto: desconto
+            }
           }
         else
           configs = HorarioConfig.all
