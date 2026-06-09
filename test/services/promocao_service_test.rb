@@ -26,7 +26,7 @@ class PromocaoServiceTest < ActiveSupport::TestCase
 
     assert_equal 10.0, PromocaoService.desconto_para(data_promocional)
 
-    promocao = Promocao.find_by(data: data_promocional)
+    promocao = Promocao.where(data: data_promocional).first
     assert promocao.ativo
     assert_equal "monday", promocao.dia_semana
   end
@@ -51,5 +51,12 @@ class PromocaoServiceTest < ActiveSupport::TestCase
     end
 
     assert_equal 0, PromocaoService.desconto_para(data_promocional)
+  end
+
+  test "nao bloqueia consulta de desconto para datas alem da proxima semana" do
+    data_futura = Date.current + 14.days
+
+    assert_equal 0, PromocaoService.desconto_para(data_futura)
+    assert_nil Promocao.where(data: data_futura).first
   end
 end

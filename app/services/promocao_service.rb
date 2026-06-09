@@ -3,6 +3,7 @@ class PromocaoService
   DIAS_SEMANA = %w[monday tuesday wednesday thursday friday saturday sunday]
   DESCONTO_PADRAO = 10.0
   OCUPACAO_MAXIMA_PROMOCIONAL = 0.5
+  JANELA_RECALCULO_DIAS = 7
 
   def self.calcular_e_salvar(referencia = Date.current)
     semana_passada = referencia.beginning_of_week(:monday) - 7
@@ -19,14 +20,14 @@ class PromocaoService
     data = data.to_date
     data_base = data - 7
 
-    return if data_base >= Date.current
+    return false if data_base >= Date.current
 
     dia = data_base.strftime("%A").downcase
-    config = HorarioConfig.find_by(dia_semana: dia, ativo: true)
+    config = HorarioConfig.where(dia_semana: dia, ativo: true).first
 
     unless config&.horarios&.any?
       Promocao.where(data: data).update_all(ativo: false)
-      return
+      return false
     end
 
     total_horarios = config.horarios.count
@@ -40,18 +41,25 @@ class PromocaoService
       promocao.motivo = "Baixo movimento em #{data_base.iso8601}"
       promocao.ativo = true
       promocao.save!
+      true
     else
       Promocao.where(data: data).update_all(ativo: false)
+      false
     end
   end
 
   def self.desconto_para(data)
-    atualizar_para_data(data)
-    promo = Promocao.find_by(data: data, ativo: true)
+    data = data.to_date
+    atualizar_para_data(data) if dentro_da_janela_de_recalculo?(data)
+    promo = Promocao.where(data: data, ativo: true).first
     promo&.desconto || 0
   end
 
   private
+
+  def self.dentro_da_janela_de_recalculo?(data)
+    data <= Date.current + JANELA_RECALCULO_DIAS.days
+  end
 
   def self.data_do_dia(inicio_semana, dia)
     offset = DIAS_SEMANA.index(dia)

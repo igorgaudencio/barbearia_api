@@ -7,7 +7,7 @@ module Api
         if params[:data].present?
           data       = Date.parse(params[:data])
           dia_semana = data.strftime("%A").downcase
-          config     = HorarioConfig.find_by(dia_semana: dia_semana, ativo: true)
+          config     = HorarioConfig.where(dia_semana: dia_semana, ativo: true).first
 
           return render json: { horarios: [], ocupados: [], disponiveis: [] } unless config
 

@@ -3,7 +3,7 @@ module Api
     class AuthController < ApplicationController
 
       def login
-        barbeiro = Barbeiro.find_by(email: params[:email])
+        barbeiro = Barbeiro.where(email: params[:email]).first
 
         if barbeiro&.authenticate(params[:password])
           token = JWT.encode(
